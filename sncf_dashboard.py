@@ -12,7 +12,6 @@ from plotly.subplots import make_subplots
 
 warnings.filterwarnings("ignore")
 
-# set_page_config doit être le premier appel Streamlit du script
 st.set_page_config(
     page_title="TARDIS · SNCF Analytics",
     page_icon="🚄",
@@ -21,7 +20,7 @@ st.set_page_config(
 )
 
 # ══════════════════════════════════════════════════════════════
-#  DESIGN TOKENS (doivent rester cohérents avec .streamlit/config.toml)
+#  DESIGN TOKENS
 # ══════════════════════════════════════════════════════════════
 BG, SURFACE, BORDER = "#0B0F19", "#111827", "#1F2937"
 TEXT, MUTED = "#E5E7EB", "#9CA3AF"
@@ -29,12 +28,9 @@ PRIMARY, ACCENT = "#6366F1", "#38BDF8"
 GOOD, WARN, BAD = "#34D399", "#FBBF24", "#F87171"
 GRID = "rgba(148,163,184,.10)"
 
-SEQ_BLUE = ["#1E2447", "#3730A3", "#6366F1", "#A5B4FC"]   # échelle "neutre"
-SEQ_RED = ["#2A1620", "#7F1D1D", "#EF4444", "#FCA5A5"]    # échelle "retards"
+SEQ_BLUE = ["#1E2447", "#3730A3", "#6366F1", "#A5B4FC"]
+SEQ_RED = ["#2A1620", "#7F1D1D", "#EF4444", "#FCA5A5"]
 
-# ══════════════════════════════════════════════════════════════
-#  CSS PERSONNALISÉ
-# ══════════════════════════════════════════════════════════════
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -114,9 +110,6 @@ button[kind="primary"]:hover, button[data-testid="stBaseButton-primary"]:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════
-#  CONSTANTES (inchangées)
-# ══════════════════════════════════════════════════════════════
 MONTH_ORDER = ["January", "February", "March", "April", "May", "June",
                "July", "August", "September", "October", "November", "December"]
 DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -149,7 +142,7 @@ DELAY = "Average delay of all trains at arrival"
 CANCEL = "Number of cancelled trains"
 
 # ══════════════════════════════════════════════════════════════
-#  HELPERS GRAPHIQUES / MISE EN PAGE
+#  MISE EN PAGE
 # ══════════════════════════════════════════════════════════════
 BASE_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
@@ -159,7 +152,6 @@ BASE_LAYOUT = dict(
     legend=dict(orientation="h", y=1.12, x=0, bgcolor="rgba(0,0,0,0)"),
 )
 
-# Compatibilité entre versions de Streamlit (use_container_width -> width="stretch")
 _STRETCH = ({"width": "stretch"} if "width" in inspect.signature(st.plotly_chart).parameters
             else {"use_container_width": True})
 
@@ -197,7 +189,7 @@ def status_of(pred):
 
 
 # ══════════════════════════════════════════════════════════════
-#  CHARGEMENT DES DONNÉES ET DU MODÈLE (inchangé)
+#  CHARGEMENT DES DONNÉES ET DU MODÈLE
 # ══════════════════════════════════════════════════════════════
 @st.cache_data(show_spinner="Loading data...")
 def load_data():
@@ -228,7 +220,7 @@ def slider(label, col, help_, is_float=False):
 
 
 # ══════════════════════════════════════════════════════════════
-#  SIDEBAR — paramètres de prédiction + filtres d'analyse
+#  SIDEBAR
 # ══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown(f"""
@@ -287,10 +279,8 @@ with st.sidebar:
                                      value=(int(df["Years"].min()), int(df["Years"].max())))
         sel_months = st.multiselect("Months", MONTH_ORDER, default=MONTH_ORDER)
 
-    st.caption("Built by Kael")
-
 # ══════════════════════════════════════════════════════════════
-#  PRÉDICTION (logique métier inchangée) — résultat gardé en session
+#  PRÉDICTION
 # ══════════════════════════════════════════════════════════════
 if run_pred:
     with st.spinner("Computing prediction…"):
@@ -343,7 +333,7 @@ if "pred_error" in st.session_state:
     st.error(f"Encoding error: {st.session_state['pred_error']}")
 
 # ══════════════════════════════════════════════════════════════
-#  KPIs DE PRÉDICTION (tout en haut)
+#  KPIs DE PRÉDICTION
 # ══════════════════════════════════════════════════════════════
 net_avg = df[DELAY].mean()
 k1, k2, k3, k4 = st.columns(4)
@@ -376,7 +366,7 @@ else:
 st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════
-#  DONNÉES FILTRÉES POUR LES ANALYSES
+#  DONNÉES FILTRÉES POUR L'ANALYSE
 # ══════════════════════════════════════════════════════════════
 mask = (df["Service"].isin(sel_service)
         & df["Years"].between(sel_years[0], sel_years[1])
@@ -533,7 +523,7 @@ def tab_time():
     with c1, card("Average delay by day of week"):
         dd = dff.groupby("Days", observed=True)[DELAY].mean().reindex(DAY_ORDER).reset_index()
         dd.columns = ["Day", "Avg Delay"]
-        colors = [BAD if v == dd["Avg Delay"].max() else PRIMARY for v in dd["Avg Delay"]]   # jour le plus en retard
+        colors = [BAD if v == dd["Avg Delay"].max() else PRIMARY for v in dd["Avg Delay"]]
         fig = go.Figure(go.Bar(x=dd["Day"], y=dd["Avg Delay"], marker_color=colors,
                                text=dd["Avg Delay"], texttemplate="%{text:.1f}", textposition="outside"))
         show(style(fig, 320, yaxis_title="Minutes"))
