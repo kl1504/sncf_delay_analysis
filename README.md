@@ -39,8 +39,8 @@ You can install the required libraries using the following command:
 
 1. Clone the repository:
     ```sh
-    git@github.com:kl1504/Data_analysis_projects.git
-    cd Data_analysis_projects
+    git clone https://github.com/kl1504/sncf_delay_analysis.git
+    cd sncf_delay_analysis
     ```
 2. Launch the differents notebooks:
     ```sh
@@ -53,10 +53,6 @@ You can install the required libraries using the following command:
     ```sh
     streamlit run sncf_dashboard.py
     ```
-## Contributors
-
-- [Kael AVANDE](https://github.com/kl1504)
-
 ## License
 
 This project is licensed under the [MIT](https://mit-license.org) License
